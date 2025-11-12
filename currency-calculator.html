@@ -88,6 +88,32 @@
             color: #555;
             margin-bottom: 0.5rem;
         }
+        
+        .btn-swap {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 0 auto;
+        }
+        
+        .btn-swap:hover {
+            transform: rotate(180deg);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+        
+        .swap-container {
+            display: flex;
+            justify-content: center;
+            margin: -10px 0;
+        }
     </style>
 </head>
 <body>
@@ -102,11 +128,6 @@
                     
                     <form id="currencyForm">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="amount" class="form-label">金额</label>
-                                <input type="number" class="form-control" id="amount" placeholder="输入金额" step="0.01" min="0" required>
-                            </div>
-                            
                             <div class="col-md-6 mb-3">
                                 <label for="fromCurrency" class="form-label">从</label>
                                 <select class="form-select" id="fromCurrency" required>
@@ -124,9 +145,7 @@
                                     <option value="SGD">🇸🇬 新加坡元 (SGD)</option>
                                 </select>
                             </div>
-                        </div>
-                        
-                        <div class="row">
+                            
                             <div class="col-md-6 mb-3">
                                 <label for="toCurrency" class="form-label">到</label>
                                 <select class="form-select" id="toCurrency" required>
@@ -144,11 +163,12 @@
                                     <option value="SGD">🇸🇬 新加坡元 (SGD)</option>
                                 </select>
                             </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="exchangeRate" class="form-label">汇率 (可选)</label>
-                                <input type="number" class="form-control" id="exchangeRate" placeholder="自动获取或手动输入" step="0.0001" min="0">
-                            </div>
+                        </div>
+                        
+                        <div class="swap-container">
+                            <button type="button" class="btn btn-swap" id="swapCurrencies" title="交换货币类型">
+                                ⇅
+                            </button>
                         </div>
                         
                         <div class="text-center">
@@ -250,6 +270,27 @@
 
         document.getElementById('toCurrency').addEventListener('change', function() {
             document.getElementById('exchangeRate').value = '';
+        });
+
+        // 货币类型对换功能
+        document.getElementById('swapCurrencies').addEventListener('click', function() {
+            const fromCurrency = document.getElementById('fromCurrency');
+            const toCurrency = document.getElementById('toCurrency');
+            
+            // 交换选中的货币类型
+            const tempValue = fromCurrency.value;
+            fromCurrency.value = toCurrency.value;
+            toCurrency.value = tempValue;
+            
+            // 清空手动汇率输入
+            document.getElementById('exchangeRate').value = '';
+            
+            // 如果已有金额，自动重新计算
+            const amount = document.getElementById('amount').value;
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                // 触发表单提交以重新计算
+                document.getElementById('currencyForm').dispatchEvent(new Event('submit'));
+            }
         });
     </script>
 </body>
