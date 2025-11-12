@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>货币兑换计算器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 5vh;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-calculate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .exchange-rate-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .currency-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        h1 {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 2rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="calculator-container">
+                    <h1 class="text-center mb-4">
+                        <span class="currency-icon">💱</span>
+                        货币兑换计算器
+                    </h1>
+                    
+                    <form id="currencyForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="amount" class="form-label">金额</label>
+                                <input type="number" class="form-control" id="amount" placeholder="输入金额" step="0.01" min="0" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="fromCurrency" class="form-label">从</label>
+                                <select class="form-select" id="fromCurrency" required>
+                                    <option value="CNY" selected>🇨🇳 人民币 (CNY)</option>
+                                    <option value="USD">🇺🇸 美元 (USD)</option>
+                                    <option value="EUR">🇪🇺 欧元 (EUR)</option>
+                                    <option value="GBP">🇬🇧 英镑 (GBP)</option>
+                                    <option value="JPY">🇯🇵 日元 (JPY)</option>
+                                    <option value="KRW">🇰🇷 韩元 (KRW)</option>
+                                    <option value="HKD">🇭🇰 港币 (HKD)</option>
+                                    <option value="TWD">🇹🇼 台币 (TWD)</option>
+                                    <option value="AUD">🇦🇺 澳元 (AUD)</option>
+                                    <option value="CAD">🇨🇦 加元 (CAD)</option>
+                                    <option value="CHF">🇨🇭 瑞士法郎 (CHF)</option>
+                                    <option value="SGD">🇸🇬 新加坡元 (SGD)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="toCurrency" class="form-label">到</label>
+                                <select class="form-select" id="toCurrency" required>
+                                    <option value="CNY">🇨🇳 人民币 (CNY)</option>
+                                    <option value="USD" selected>🇺🇸 美元 (USD)</option>
+                                    <option value="EUR">🇪🇺 欧元 (EUR)</option>
+                                    <option value="GBP">🇬🇧 英镑 (GBP)</option>
+                                    <option value="JPY">🇯🇵 日元 (JPY)</option>
+                                    <option value="KRW">🇰🇷 韩元 (KRW)</option>
+                                    <option value="HKD">🇭🇰 港币 (HKD)</option>
+                                    <option value="TWD">🇹🇼 台币 (TWD)</option>
+                                    <option value="AUD">🇦🇺 澳元 (AUD)</option>
+                                    <option value="CAD">🇨🇦 加元 (CAD)</option>
+                                    <option value="CHF">🇨🇭 瑞士法郎 (CHF)</option>
+                                    <option value="SGD">🇸🇬 新加坡元 (SGD)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="exchangeRate" class="form-label">汇率 (可选)</label>
+                                <input type="number" class="form-control" id="exchangeRate" placeholder="自动获取或手动输入" step="0.0001" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-calculate btn-lg">
+                                计算兑换
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="result-box" id="resultBox">
+                        请输入金额并选择货币进行兑换
+                    </div>
+                    
+                    <div class="exchange-rate-info" id="rateInfo" style="display: none;">
+                        <strong>汇率信息：</strong>
+                        <span id="rateText"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟汇率数据 (实际应用中应该从API获取)
+        const exchangeRates = {
+            'CNY': { 'USD': 0.14, 'EUR': 0.13, 'GBP': 0.11, 'JPY': 20.85, 'KRW': 183.5, 'HKD': 1.08, 'TWD': 4.35, 'AUD': 0.21, 'CAD': 0.19, 'CHF': 0.13, 'SGD': 0.19 },
+            'USD': { 'CNY': 7.25, 'EUR': 0.92, 'GBP': 0.79, 'JPY': 149.50, 'KRW': 1315.0, 'HKD': 7.83, 'TWD': 31.25, 'AUD': 1.52, 'CAD': 1.36, 'CHF': 0.88, 'SGD': 1.35 },
+            'EUR': { 'CNY': 7.85, 'USD': 1.09, 'GBP': 0.86, 'JPY': 162.75, 'KRW': 1432.5, 'HKD': 8.50, 'TWD': 33.95, 'AUD': 1.65, 'CAD': 1.48, 'CHF': 0.96, 'SGD': 1.47 },
+            'GBP': { 'CNY': 9.10, 'USD': 1.27, 'EUR': 1.16, 'JPY': 188.75, 'KRW': 1660.0, 'HKD': 9.85, 'TWD': 39.35, 'AUD': 1.91, 'CAD': 1.71, 'CHF': 1.11, 'SGD': 1.70 },
+            'JPY': { 'CNY': 0.048, 'USD': 0.0067, 'EUR': 0.0061, 'GBP': 0.0053, 'KRW': 8.80, 'HKD': 0.052, 'TWD': 0.21, 'AUD': 0.010, 'CAD': 0.0091, 'CHF': 0.0059, 'SGD': 0.0090 },
+            'KRW': { 'CNY': 0.0055, 'USD': 0.00076, 'EUR': 0.00070, 'GBP': 0.00060, 'JPY': 0.11, 'HKD': 0.0060, 'TWD': 0.024, 'AUD': 0.0012, 'CAD': 0.0010, 'CHF': 0.00067, 'SGD': 0.0010 },
+            'HKD': { 'CNY': 0.93, 'USD': 0.13, 'EUR': 0.12, 'GBP': 0.10, 'JPY': 19.10, 'KRW': 168.0, 'TWD': 3.99, 'AUD': 0.19, 'CAD': 0.17, 'CHF': 0.11, 'SGD': 0.17 },
+            'TWD': { 'CNY': 0.23, 'USD': 0.032, 'EUR': 0.029, 'GBP': 0.025, 'JPY': 4.79, 'KRW': 42.1, 'HKD': 0.25, 'AUD': 0.049, 'CAD': 0.044, 'CHF': 0.028, 'SGD': 0.043 },
+            'AUD': { 'CNY': 4.75, 'USD': 0.66, 'EUR': 0.61, 'GBP': 0.52, 'JPY': 98.25, 'KRW': 865.0, 'HKD': 5.15, 'TWD': 20.45, 'CAD': 0.90, 'CHF': 0.58, 'SGD': 0.89 },
+            'CAD': { 'CNY': 5.30, 'USD': 0.74, 'EUR': 0.68, 'GBP': 0.58, 'JPY': 109.75, 'KRW': 965.0, 'HKD': 5.75, 'TWD': 22.85, 'AUD': 1.11, 'CHF': 0.65, 'SGD': 0.99 },
+            'CHF': { 'CNY': 8.15, 'USD': 1.14, 'EUR': 1.04, 'GBP': 0.90, 'JPY': 169.25, 'KRW': 1490.0, 'HKD': 8.85, 'TWD': 35.15, 'AUD': 1.72, 'CAD': 1.54, 'SGD': 1.53 },
+            'SGD': { 'CNY': 5.35, 'USD': 0.74, 'EUR': 0.68, 'GBP': 0.59, 'JPY': 110.75, 'KRW': 975.0, 'HKD': 5.80, 'TWD': 23.05, 'AUD': 1.12, 'CAD': 1.01, 'CHF': 0.65 }
+        };
+
+        document.getElementById('currencyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('amount').value);
+            const fromCurrency = document.getElementById('fromCurrency').value;
+            const toCurrency = document.getElementById('toCurrency').value;
+            const manualRate = document.getElementById('exchangeRate').value;
+            
+            if (isNaN(amount) || amount <= 0) {
+                showResult('请输入有效的金额', 'error');
+                return;
+            }
+            
+            let rate;
+            if (manualRate && !isNaN(manualRate) && parseFloat(manualRate) > 0) {
+                rate = parseFloat(manualRate);
+            } else {
+                if (fromCurrency === toCurrency) {
+                    rate = 1;
+                } else {
+                    rate = exchangeRates[fromCurrency][toCurrency];
+                    if (!rate) {
+                        showResult('无法获取汇率信息', 'error');
+                        return;
+                    }
+                }
+            }
+            
+            const result = (amount * rate).toFixed(2);
+            const currencySymbols = {
+                'CNY': '¥', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥',
+                'KRW': '₩', 'HKD': 'HK$', 'TWD': 'NT$', 'AUD': 'A$', 'CAD': 'C$', 'CHF': 'Fr', 'SGD': 'S$'
+            };
+            
+            const resultText = `${amount} ${fromCurrency} = ${currencySymbols[toCurrency]}${result} ${toCurrency}`;
+            showResult(resultText, 'success');
+            
+            // 显示汇率信息
+            const rateInfo = document.getElementById('rateInfo');
+            const rateText = document.getElementById('rateText');
+            rateInfo.style.display = 'block';
+            rateText.textContent = `1 ${fromCurrency} = ${rate} ${toCurrency}`;
+        });
+
+        function showResult(message, type) {
+            const resultBox = document.getElementById('resultBox');
+            resultBox.textContent = message;
+            
+            if (type === 'error') {
+                resultBox.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
+            } else {
+                resultBox.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+            }
+        }
+
+        // 当货币选择改变时，清空手动汇率输入
+        document.getElementById('fromCurrency').addEventListener('change', function() {
+            document.getElementById('exchangeRate').value = '';
+        });
+
+        document.getElementById('toCurrency').addEventListener('change', function() {
+            document.getElementById('exchangeRate').value = '';
+        });
+    </script>
+</body>
+</html>
