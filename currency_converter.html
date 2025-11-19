@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汇率换算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .converter-box {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e8;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        
+        .rate-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>汇率换算器</h1>
+        <div class="converter-box">
+            <div class="input-group">
+                <label for="amount">金额:</label>
+                <input type="number" id="amount" placeholder="请输入金额" value="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="fromCurrency">从:</label>
+                <select id="fromCurrency">
+                    <option value="USD">美元 (USD)</option>
+                    <option value="EUR">欧元 (EUR)</option>
+                    <option value="GBP">英镑 (GBP)</option>
+                    <option value="JPY">日元 (JPY)</option>
+                    <option value="CNY" selected>人民币 (CNY)</option>
+                    <option value="CAD">加拿大元 (CAD)</option>
+                    <option value="AUD">澳大利亚元 (AUD)</option>
+                    <option value="CHF">瑞士法郎 (CHF)</option>
+                    <option value="HKD">港元 (HKD)</option>
+                    <option value="KRW">韩元 (KRW)</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="toCurrency">到:</label>
+                <select id="toCurrency">
+                    <option value="USD" selected>美元 (USD)</option>
+                    <option value="EUR">欧元 (EUR)</option>
+                    <option value="GBP">英镑 (GBP)</option>
+                    <option value="JPY">日元 (JPY)</option>
+                    <option value="CNY">人民币 (CNY)</option>
+                    <option value="CAD">加拿大元 (CAD)</option>
+                    <option value="AUD">澳大利亚元 (AUD)</option>
+                    <option value="CHF">瑞士法郎 (CHF)</option>
+                    <option value="HKD">港元 (HKD)</option>
+                    <option value="KRW">韩元 (KRW)</option>
+                </select>
+            </div>
+            
+            <button onclick="convertCurrency()">转换</button>
+            
+            <div id="result" class="result" style="display: none;"></div>
+            <div id="rateInfo" class="rate-info"></div>
+        </div>
+    </div>
+
+    <script>
+        // 预设的汇率数据（以人民币为基准）
+        const exchangeRates = {
+            "USD": 7.25,    // 美元
+            "EUR": 7.85,    // 欧元
+            "GBP": 9.15,    // 英镑
+            "JPY": 0.065,   // 日元
+            "CNY": 1,       // 人民币
+            "CAD": 5.5,     // 加拿大元
+            "AUD": 4.9,     // 澳大利亚元
+            "CHF": 8.1,     // 瑞士法郎
+            "HKD": 0.93,    // 港元
+            "KRW": 0.0055   // 韩元
+        };
+
+        function convertCurrency() {
+            // 获取输入值
+            const amount = parseFloat(document.getElementById('amount').value);
+            const fromCurrency = document.getElementById('fromCurrency').value;
+            const toCurrency = document.getElementById('toCurrency').value;
+            
+            // 验证输入
+            if (isNaN(amount) || amount <= 0) {
+                alert('请输入有效的金额');
+                return;
+            }
+            
+            // 执行转换
+            const result = calculateExchange(amount, fromCurrency, toCurrency);
+            
+            // 显示结果
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `${amount} ${fromCurrency} = ${result.toFixed(2)} ${toCurrency}`;
+            resultElement.style.display = 'block';
+            
+            // 显示汇率信息
+            const rate = calculateExchange(1, fromCurrency, toCurrency);
+            document.getElementById('rateInfo').innerHTML = `1 ${fromCurrency} = ${rate.toFixed(4)} ${toCurrency}`;
+        }
+
+        function calculateExchange(amount, from, to) {
+            // 将金额转换为人民币，然后转换为目标货币
+            const amountInCNY = amount * (1 / exchangeRates[from]);
+            return amountInCNY * exchangeRates[to];
+        }
+
+        // 页面加载时显示当前汇率信息
+        window.onload = function() {
+            const fromCurrency = document.getElementById('fromCurrency').value;
+            const toCurrency = document.getElementById('toCurrency').value;
+            const rate = calculateExchange(1, fromCurrency, toCurrency);
+            document.getElementById('rateInfo').innerHTML = `1 ${fromCurrency} = ${rate.toFixed(4)} ${toCurrency}`;
+        };
+
+        // 在用户更改货币类型时更新汇率信息
+        document.getElementById('fromCurrency').addEventListener('change', function() {
+            convertCurrency();
+        });
+
+        document.getElementById('toCurrency').addEventListener('change', function() {
+            convertCurrency();
+        });
+
+        // 在用户输入金额时更新转换结果
+        document.getElementById('amount').addEventListener('input', function() {
+            const amount = parseFloat(this.value);
+            if (!isNaN(amount) && amount > 0) {
+                convertCurrency();
+            }
+        });
+    </script>
+</body>
+</html>
