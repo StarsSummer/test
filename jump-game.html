@@ -29,11 +29,13 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            perspective: 1000px;
         }
 
         canvas {
             display: block;
             cursor: pointer;
+            transform-style: preserve-3d;
         }
 
         .score {
@@ -158,19 +160,23 @@
             maxPower: 100,
             chargeSpeed: 2,
             gravity: 0.5,
-            jumpPowerMultiplier: 0.15
+            jumpPowerMultiplier: 0.15,
+            perspective: 800,
+            horizon: canvas.height * 0.6
         };
 
         // 玩家角色
         class Player {
-            constructor(x, y) {
+            constructor(x, y, z) {
                 this.x = x;
                 this.y = y;
+                this.z = z;
                 this.radius = 15;
-                this.velocity = { x: 0, y: 0 };
+                this.velocity = { x: 0, y: 0, z: 0 };
                 this.isJumping = false;
                 this.trail = [];
                 this.maxTrailLength = 10;
+                this.currentPlatform = null;
             }
 
             update() {
@@ -178,9 +184,10 @@
                     this.velocity.y += gameState.gravity;
                     this.x += this.velocity.x;
                     this.y += this.velocity.y;
+                    this.z += this.velocity.z;
 
                     // 添加轨迹
-                    this.trail.push({ x: this.x, y: this.y });
+                    this.trail.push({ x: this.x, y: this.y, z: this.z });
                     if (this.trail.length > this.maxTrailLength) {
                         this.trail.shift();
                     }
@@ -195,68 +202,114 @@
                     }
 
                     // 检查是否出界
-                    if (this.y > canvas.height + 50 || this.x < -50 || this.x > canvas.width + 50) {
+                    if (this.y > canvas.height + 50 || this.z < 0 || this.z > 1000) {
                         gameOver();
                     }
                 }
             }
 
             checkLanding(platform) {
+                const platformTop = platform.y - platform.height / 2;
                 return this.x > platform.x - platform.width / 2 &&
                        this.x < platform.x + platform.width / 2 &&
-                       this.y + this.radius > platform.y &&
-                       this.y + this.radius < platform.y + 20 &&
+                       this.z > platform.z - platform.depth / 2 &&
+                       this.z < platform.z + platform.depth / 2 &&
+                       this.y + this.radius > platformTop &&
+                       this.y + this.radius < platformTop + 20 &&
                        this.velocity.y > 0;
             }
 
             land(platform) {
                 this.isJumping = false;
-                this.velocity = { x: 0, y: 0 };
-                this.y = platform.y - this.radius;
+                this.velocity = { x: 0, y: 0, z: 0 };
+                this.y = platform.y - platform.height / 2 - this.radius;
                 this.trail = [];
+                this.currentPlatform = platform;
                 
-                // 检查是否成功跳到平台
-                if (platform !== platforms[platforms.length - 1]) {
-                    // 检查是否跳过了中间的平台
-                    const currentIndex = platforms.indexOf(platform);
-                    if (currentIndex === platforms.length - 2) {
-                        gameState.score++;
-                        scoreElement.textContent = gameState.score;
-                        generateNewPlatform();
-                    }
+                // 检查是否成功跳到下一个平台
+                const currentIndex = platforms.indexOf(platform);
+                if (currentIndex === platforms.length - 2) {
+                    gameState.score++;
+                    scoreElement.textContent = gameState.score;
+                    generateNewPlatform();
                 }
             }
 
             jump(power) {
-                if (!this.isJumping) {
+                if (!this.isJumping && this.currentPlatform) {
                     this.isJumping = true;
-                    const jumpAngle = -Math.PI / 4; // 45度角
-                    const jumpForce = power * gameState.jumpPowerMultiplier;
-                    this.velocity.x = Math.cos(jumpAngle) * jumpForce;
-                    this.velocity.y = Math.sin(jumpAngle) * jumpForce;
+                    
+                    // 找到下一个目标平台
+                    const currentIndex = platforms.indexOf(this.currentPlatform);
+                    const targetPlatform = platforms[currentIndex + 1];
+                    
+                    if (targetPlatform) {
+                        // 计算跳跃方向和力度
+                        const dx = targetPlatform.x - this.x;
+                        const dz = targetPlatform.z - this.z;
+                        const distance = Math.sqrt(dx * dx + dz * dz);
+                        
+                        // 归一化方向向量
+                        const dirX = dx / distance;
+                        const dirZ = dz / distance;
+                        
+                        // 计算跳跃力度
+                        const jumpForce = power * gameState.jumpPowerMultiplier;
+                        
+                        // 设置速度
+                        this.velocity.x = dirX * jumpForce * 0.8;
+                        this.velocity.z = dirZ * jumpForce * 0.8;
+                        this.velocity.y = -jumpForce * 1.2;
+                    } else {
+                        // 如果没有目标平台，向前跳
+                        const jumpForce = power * gameState.jumpPowerMultiplier;
+                        this.velocity.x = 0;
+                        this.velocity.z = jumpForce * 0.8;
+                        this.velocity.y = -jumpForce * 1.2;
+                    }
                 }
             }
 
+            // 3D到2D投影
+            project() {
+                const scale = gameState.perspective / (gameState.perspective + this.z);
+                return {
+                    x: this.x,
+                    y: this.y,
+                    scale: scale,
+                    radius: this.radius * scale
+                };
+            }
+
             draw() {
+                const proj = this.project();
+                
                 // 绘制轨迹
                 this.trail.forEach((point, index) => {
+                    const pointScale = gameState.perspective / (gameState.perspective + point.z);
                     ctx.globalAlpha = index / this.trail.length * 0.5;
                     ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
-                    ctx.arc(point.x, point.y, this.radius * (index / this.trail.length), 0, Math.PI * 2);
+                    ctx.arc(point.x, point.y, this.radius * pointScale * (index / this.trail.length), 0, Math.PI * 2);
                     ctx.fill();
                 });
 
                 ctx.globalAlpha = 1;
 
+                // 绘制玩家阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(proj.x, this.y + this.radius, proj.radius * 1.2, proj.radius * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+
                 // 绘制玩家
-                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                const gradient = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, proj.radius);
                 gradient.addColorStop(0, '#FFD700');
                 gradient.addColorStop(1, '#FFA500');
                 
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI * 2);
                 ctx.fill();
 
                 // 绘制边框
@@ -267,19 +320,21 @@
                 // 绘制眼睛
                 ctx.fillStyle = '#000';
                 ctx.beginPath();
-                ctx.arc(this.x - 5, this.y - 3, 2, 0, Math.PI * 2);
-                ctx.arc(this.x + 5, this.y - 3, 2, 0, Math.PI * 2);
+                ctx.arc(proj.x - 5 * proj.scale, proj.y - 3 * proj.scale, 2 * proj.scale, 0, Math.PI * 2);
+                ctx.arc(proj.x + 5 * proj.scale, proj.y - 3 * proj.scale, 2 * proj.scale, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
         // 平台类
         class Platform {
-            constructor(x, y, width) {
+            constructor(x, y, z, width, depth) {
                 this.x = x;
                 this.y = y;
+                this.z = z;
                 this.width = width;
-                this.height = 10;
+                this.depth = depth;
+                this.height = 20;
                 this.color = this.getRandomColor();
             }
 
@@ -288,19 +343,80 @@
                 return colors[Math.floor(Math.random() * colors.length)];
             }
 
+            // 3D到2D投影
+            project() {
+                const scale = gameState.perspective / (gameState.perspective + this.z);
+                return {
+                    x: this.x,
+                    y: this.y,
+                    width: this.width * scale,
+                    depth: this.depth * scale,
+                    height: this.height * scale,
+                    scale: scale
+                };
+            }
+
             draw() {
-                // 绘制平台主体
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
+                const proj = this.project();
+                
+                // 绘制平台阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(
+                    proj.x - proj.width / 2 + 5,
+                    proj.y + 5,
+                    proj.width,
+                    proj.depth * 0.3
+                );
 
                 // 绘制平台顶部
+                ctx.fillStyle = this.color;
+                ctx.fillRect(
+                    proj.x - proj.width / 2,
+                    proj.y - proj.height / 2,
+                    proj.width,
+                    proj.depth
+                );
+
+                // 绘制平台侧面（3D效果）
                 ctx.fillStyle = '#654321';
-                ctx.fillRect(this.x - this.width / 2, this.y, this.width, 2);
+                // 右侧面
+                ctx.beginPath();
+                ctx.moveTo(proj.x + proj.width / 2, proj.y - proj.height / 2);
+                ctx.lineTo(proj.x + proj.width / 2 + proj.depth * 0.2, proj.y - proj.height / 2 - proj.depth * 0.1);
+                ctx.lineTo(proj.x + proj.width / 2 + proj.depth * 0.2, proj.y + proj.height / 2 - proj.depth * 0.1);
+                ctx.lineTo(proj.x + proj.width / 2, proj.y + proj.height / 2);
+                ctx.closePath();
+                ctx.fill();
+
+                // 前侧面
+                ctx.beginPath();
+                ctx.moveTo(proj.x - proj.width / 2, proj.y + proj.height / 2);
+                ctx.lineTo(proj.x - proj.width / 2 + proj.depth * 0.2, proj.y + proj.height / 2 - proj.depth * 0.1);
+                ctx.lineTo(proj.x + proj.width / 2 + proj.depth * 0.2, proj.y + proj.height / 2 - proj.depth * 0.1);
+                ctx.lineTo(proj.x + proj.width / 2, proj.y + proj.height / 2);
+                ctx.closePath();
+                ctx.fill();
 
                 // 绘制平台边缘
                 ctx.strokeStyle = '#4A2C17';
                 ctx.lineWidth = 1;
-                ctx.strokeRect(this.x - this.width / 2, this.y, this.width, this.height);
+                ctx.strokeRect(
+                    proj.x - proj.width / 2,
+                    proj.y - proj.height / 2,
+                    proj.width,
+                    proj.depth
+                );
+
+                // 绘制平台纹理
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    const lineY = proj.y - proj.height / 2 + (i + 1) * proj.depth / 4;
+                    ctx.beginPath();
+                    ctx.moveTo(proj.x - proj.width / 2, lineY);
+                    ctx.lineTo(proj.x + proj.width / 2, lineY);
+                    ctx.stroke();
+                }
             }
         }
 
@@ -320,14 +436,15 @@
             powerBar.style.width = '0%';
 
             // 创建玩家
-            player = new Player(100, 400);
+            player = new Player(canvas.width / 2, 400, 100);
 
-            // 创建初始平台
+            // 创建初始平台（3D布局）
             platforms = [
-                new Platform(100, 450, 80),
-                new Platform(250, 350, 60),
-                new Platform(150, 250, 70),
-                new Platform(300, 150, 50)
+                new Platform(canvas.width / 2, 450, 100, 80, 60),
+                new Platform(canvas.width / 2 - 50, 400, 200, 70, 50),
+                new Platform(canvas.width / 2 + 30, 350, 300, 60, 55),
+                new Platform(canvas.width / 2 - 20, 300, 400, 75, 45),
+                new Platform(canvas.width / 2 + 40, 250, 500, 65, 50)
             ];
 
             // 玩家站在第一个平台上
@@ -337,28 +454,24 @@
         // 生成新平台
         function generateNewPlatform() {
             const lastPlatform = platforms[platforms.length - 1];
-            const minDistance = 100;
-            const maxDistance = 200;
+            const minDistance = 80;
+            const maxDistance = 150;
             const distance = minDistance + Math.random() * (maxDistance - minDistance);
-            const width = 40 + Math.random() * 40;
+            const width = 50 + Math.random() * 40;
+            const depth = 40 + Math.random() * 30;
             
-            let newX = lastPlatform.x + distance;
-            let newY = lastPlatform.y - 30 + Math.random() * 60;
+            let newX = lastPlatform.x + (Math.random() - 0.5) * 100;
+            let newZ = lastPlatform.z + distance;
+            let newY = lastPlatform.y + (Math.random() - 0.5) * 40;
             
-            // 确保平台在画布范围内
-            if (newX > canvas.width - 50) {
-                newX = canvas.width - 50;
-            }
-            if (newY < 100) {
-                newY = 100;
-            } else if (newY > canvas.height - 100) {
-                newY = canvas.height - 100;
-            }
+            // 确保平台在合理范围内
+            newX = Math.max(50, Math.min(canvas.width - 50, newX));
+            newY = Math.max(200, Math.min(500, newY));
 
-            platforms.push(new Platform(newX, newY, width));
+            platforms.push(new Platform(newX, newY, newZ, width, depth));
 
-            // 移除屏幕外的平台
-            platforms = platforms.filter(platform => platform.y < canvas.height + 50);
+            // 移除太远的平台
+            platforms = platforms.filter(platform => platform.z < player.z + 300);
         }
 
         // 游戏主循环
@@ -366,15 +479,21 @@
             // 清空画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 绘制背景
-            drawBackground();
+            // 绘制3D背景
+            draw3DBackground();
 
-            // 更新和绘制平台
+            // 按Z坐标排序平台（远的先画）
+            platforms.sort((a, b) => b.z - a.z);
             platforms.forEach(platform => platform.draw());
 
             // 更新和绘制玩家
             player.update();
             player.draw();
+
+            // 绘制瞄准线（蓄力时）
+            if (gameState.isCharging && player.currentPlatform) {
+                drawAimLine();
+            }
 
             // 更新蓄力条
             if (gameState.isCharging) {
@@ -387,22 +506,94 @@
             }
         }
 
-        // 绘制背景
-        function drawBackground() {
-            // 绘制云朵
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-            drawCloud(50, 100, 30);
-            drawCloud(300, 150, 25);
-            drawCloud(150, 200, 35);
+        // 绘制3D背景
+        function draw3DBackground() {
+            // 绘制地平线
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, gameState.horizon);
+            ctx.lineTo(canvas.width, gameState.horizon);
+            ctx.stroke();
+
+            // 绘制透视网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 0.5;
+            
+            // 垂直线
+            for (let i = 0; i <= canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, gameState.horizon);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+            }
+
+            // 水平线
+            for (let z = 0; z <= 500; z += 50) {
+                const scale = gameState.perspective / (gameState.perspective + z);
+                const y = gameState.horizon + (canvas.height - gameState.horizon) * (1 - scale);
+                
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // 绘制远处的云朵
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            draw3DCloud(100, 150, 30, 400);
+            draw3DCloud(300, 120, 25, 350);
+            draw3DCloud(250, 180, 35, 450);
         }
 
-        // 绘制云朵
-        function drawCloud(x, y, size) {
+        // 绘制3D云朵
+        function draw3DCloud(x, y, size, z) {
+            const scale = gameState.perspective / (gameState.perspective + z);
+            const projY = gameState.horizon + (y - gameState.horizon) * scale;
+            const projSize = size * scale;
+            
+            ctx.globalAlpha = 0.6 * scale;
             ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.arc(x + size, y, size * 0.8, 0, Math.PI * 2);
-            ctx.arc(x - size, y, size * 0.8, 0, Math.PI * 2);
+            ctx.arc(x, projY, projSize, 0, Math.PI * 2);
+            ctx.arc(x + projSize, projY, projSize * 0.8, 0, Math.PI * 2);
+            ctx.arc(x - projSize, projY, projSize * 0.8, 0, Math.PI * 2);
             ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+
+        // 绘制瞄准线
+        function drawAimLine() {
+            const currentIndex = platforms.indexOf(player.currentPlatform);
+            const targetPlatform = platforms[currentIndex + 1];
+            
+            if (targetPlatform) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y);
+                
+                // 计算预测轨迹
+                const dx = targetPlatform.x - player.x;
+                const dz = targetPlatform.z - player.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                const dirX = dx / distance;
+                const dirZ = dz / distance;
+                
+                const jumpForce = gameState.power * gameState.jumpPowerMultiplier;
+                const steps = 20;
+                
+                for (let i = 1; i <= steps; i++) {
+                    const t = i / steps;
+                    const px = player.x + dirX * jumpForce * 0.8 * t * 10;
+                    const py = player.y - jumpForce * 1.2 * t * 10 + 0.5 * gameState.gravity * t * t * 100;
+                    ctx.lineTo(px, py);
+                }
+                
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
         }
 
         // 游戏结束
