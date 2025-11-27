@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             justify-content: center;
@@ -25,11 +25,12 @@
             position: relative;
             width: 400px;
             height: 600px;
-            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            border-radius: 25px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.1);
             overflow: hidden;
             perspective: 1000px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         canvas {
@@ -44,9 +45,14 @@
             left: 20px;
             font-size: 24px;
             font-weight: bold;
-            color: #333;
-            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+            color: #fff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 10;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .game-over {
@@ -54,72 +60,93 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.9));
+            padding: 40px;
+            border-radius: 20px;
             text-align: center;
             display: none;
             z-index: 20;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .game-over h2 {
-            color: #333;
+            color: #2c3e50;
             margin-bottom: 15px;
-            font-size: 28px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .game-over p {
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 18px;
+            color: #34495e;
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: 500;
         }
 
         .restart-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            border-radius: 25px;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .restart-btn:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        .restart-btn:active {
+            transform: translateY(0) scale(1.02);
         }
 
         .power-indicator {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
+            width: 220px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
             overflow: hidden;
             z-index: 10;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .power-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #4CAF50, #8BC34A, #FFEB3B, #FF9800, #F44336);
-            border-radius: 5px;
+            background: linear-gradient(90deg, #00ff88, #00ffaa, #ffff00, #ff9900, #ff3366);
+            border-radius: 8px;
             transition: width 0.1s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
         }
 
         .instructions {
             position: absolute;
-            bottom: 60px;
+            bottom: 70px;
             left: 50%;
             transform: translateX(-50%);
-            color: #666;
+            color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
             text-align: center;
             z-index: 10;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 16px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
@@ -162,7 +189,9 @@
             gravity: 0.5,
             jumpPowerMultiplier: 0.15,
             perspective: 800,
-            horizon: canvas.height * 0.6
+            horizon: canvas.height * 0.6,
+            particles: [],
+            animationTime: 0
         };
 
         // 玩家角色
@@ -284,10 +313,22 @@
             draw() {
                 const proj = this.project();
                 
-                // 绘制轨迹
+                // 绘制发光轨迹
                 this.trail.forEach((point, index) => {
                     const pointScale = gameState.perspective / (gameState.perspective + point.z);
-                    ctx.globalAlpha = index / this.trail.length * 0.5;
+                    const alpha = index / this.trail.length * 0.8;
+                    
+                    // 轨迹光晕
+                    const trailGlow = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, this.radius * pointScale * 2);
+                    trailGlow.addColorStop(0, `rgba(255, 215, 0, ${alpha})`);
+                    trailGlow.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                    ctx.fillStyle = trailGlow;
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, this.radius * pointScale * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 轨迹主体
+                    ctx.globalAlpha = alpha;
                     ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
                     ctx.arc(point.x, point.y, this.radius * pointScale * (index / this.trail.length), 0, Math.PI * 2);
@@ -297,15 +338,25 @@
                 ctx.globalAlpha = 1;
 
                 // 绘制玩家阴影
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                 ctx.beginPath();
-                ctx.ellipse(proj.x, this.y + this.radius, proj.radius * 1.2, proj.radius * 0.3, 0, 0, Math.PI * 2);
+                ctx.ellipse(proj.x, this.y + this.radius, proj.radius * 1.5, proj.radius * 0.4, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // 绘制玩家
-                const gradient = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, proj.radius);
-                gradient.addColorStop(0, '#FFD700');
-                gradient.addColorStop(1, '#FFA500');
+                // 绘制玩家光晕
+                const playerGlow = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, proj.radius * 2);
+                playerGlow.addColorStop(0, 'rgba(255, 215, 0, 0.6)');
+                playerGlow.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                ctx.fillStyle = playerGlow;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, proj.radius * 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 绘制玩家主体
+                const gradient = ctx.createRadialGradient(proj.x - proj.radius * 0.3, proj.y - proj.radius * 0.3, 0, proj.x, proj.y, proj.radius);
+                gradient.addColorStop(0, '#FFEB3B');
+                gradient.addColorStop(0.5, '#FFD700');
+                gradient.addColorStop(1, '#FFA000');
                 
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
@@ -317,11 +368,24 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
+                // 绘制高光
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath();
+                ctx.arc(proj.x - proj.radius * 0.3, proj.y - proj.radius * 0.3, proj.radius * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+
                 // 绘制眼睛
                 ctx.fillStyle = '#000';
                 ctx.beginPath();
                 ctx.arc(proj.x - 5 * proj.scale, proj.y - 3 * proj.scale, 2 * proj.scale, 0, Math.PI * 2);
                 ctx.arc(proj.x + 5 * proj.scale, proj.y - 3 * proj.scale, 2 * proj.scale, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制眼睛高光
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath();
+                ctx.arc(proj.x - 4 * proj.scale, proj.y - 4 * proj.scale, 0.8 * proj.scale, 0, Math.PI * 2);
+                ctx.arc(proj.x + 4 * proj.scale, proj.y - 4 * proj.scale, 0.8 * proj.scale, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -359,17 +423,29 @@
             draw() {
                 const proj = this.project();
                 
+                // 绘制平台光晕
+                const platformGlow = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, Math.max(proj.width, proj.depth));
+                platformGlow.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+                platformGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = platformGlow;
+                ctx.fillRect(proj.x - proj.width, proj.y - proj.height, proj.width * 2, proj.depth * 2);
+                
                 // 绘制平台阴影
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.fillRect(
-                    proj.x - proj.width / 2 + 5,
-                    proj.y + 5,
+                    proj.x - proj.width / 2 + 8,
+                    proj.y + 8,
                     proj.width,
-                    proj.depth * 0.3
+                    proj.depth * 0.4
                 );
 
                 // 绘制平台顶部
-                ctx.fillStyle = this.color;
+                const topGradient = ctx.createLinearGradient(proj.x - proj.width / 2, proj.y - proj.height / 2, proj.x + proj.width / 2, proj.y + proj.height / 2);
+                topGradient.addColorStop(0, this.lightenColor(this.color, 20));
+                topGradient.addColorStop(0.5, this.color);
+                topGradient.addColorStop(1, this.darkenColor(this.color, 20));
+                
+                ctx.fillStyle = topGradient;
                 ctx.fillRect(
                     proj.x - proj.width / 2,
                     proj.y - proj.height / 2,
@@ -378,8 +454,12 @@
                 );
 
                 // 绘制平台侧面（3D效果）
-                ctx.fillStyle = '#654321';
                 // 右侧面
+                const rightGradient = ctx.createLinearGradient(proj.x + proj.width / 2, proj.y - proj.height / 2, proj.x + proj.width / 2 + proj.depth * 0.2, proj.y - proj.height / 2);
+                rightGradient.addColorStop(0, this.darkenColor(this.color, 30));
+                rightGradient.addColorStop(1, this.darkenColor(this.color, 50));
+                
+                ctx.fillStyle = rightGradient;
                 ctx.beginPath();
                 ctx.moveTo(proj.x + proj.width / 2, proj.y - proj.height / 2);
                 ctx.lineTo(proj.x + proj.width / 2 + proj.depth * 0.2, proj.y - proj.height / 2 - proj.depth * 0.1);
@@ -389,6 +469,11 @@
                 ctx.fill();
 
                 // 前侧面
+                const frontGradient = ctx.createLinearGradient(proj.x - proj.width / 2, proj.y + proj.height / 2, proj.x - proj.width / 2, proj.y + proj.height / 2 - proj.depth * 0.1);
+                frontGradient.addColorStop(0, this.darkenColor(this.color, 40));
+                frontGradient.addColorStop(1, this.darkenColor(this.color, 60));
+                
+                ctx.fillStyle = frontGradient;
                 ctx.beginPath();
                 ctx.moveTo(proj.x - proj.width / 2, proj.y + proj.height / 2);
                 ctx.lineTo(proj.x - proj.width / 2 + proj.depth * 0.2, proj.y + proj.height / 2 - proj.depth * 0.1);
@@ -398,8 +483,8 @@
                 ctx.fill();
 
                 // 绘制平台边缘
-                ctx.strokeStyle = '#4A2C17';
-                ctx.lineWidth = 1;
+                ctx.strokeStyle = this.darkenColor(this.color, 60);
+                ctx.lineWidth = 2;
                 ctx.strokeRect(
                     proj.x - proj.width / 2,
                     proj.y - proj.height / 2,
@@ -407,16 +492,60 @@
                     proj.depth
                 );
 
-                // 绘制平台纹理
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                // 绘制平台装饰纹理
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                 ctx.lineWidth = 1;
-                for (let i = 0; i < 3; i++) {
-                    const lineY = proj.y - proj.height / 2 + (i + 1) * proj.depth / 4;
+                
+                // 横向纹理
+                for (let i = 0; i < 4; i++) {
+                    const lineY = proj.y - proj.height / 2 + (i + 1) * proj.depth / 5;
                     ctx.beginPath();
-                    ctx.moveTo(proj.x - proj.width / 2, lineY);
-                    ctx.lineTo(proj.x + proj.width / 2, lineY);
+                    ctx.moveTo(proj.x - proj.width / 2 + 5, lineY);
+                    ctx.lineTo(proj.x + proj.width / 2 - 5, lineY);
                     ctx.stroke();
                 }
+                
+                // 纵向纹理
+                for (let i = 0; i < 3; i++) {
+                    const lineX = proj.x - proj.width / 2 + (i + 1) * proj.width / 4;
+                    ctx.beginPath();
+                    ctx.moveTo(lineX, proj.y - proj.height / 2 + 5);
+                    ctx.lineTo(lineX, proj.y + proj.height / 2 - 5);
+                    ctx.stroke();
+                }
+
+                // 绘制平台高光
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillRect(
+                    proj.x - proj.width / 2 + 5,
+                    proj.y - proj.height / 2 + 5,
+                    proj.width - 10,
+                    3
+                );
+            }
+
+            lightenColor(color, percent) {
+                const num = parseInt(color.replace("#", ""), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255))
+                    .toString(16).slice(1);
+            }
+
+            darkenColor(color, percent) {
+                const num = parseInt(color.replace("#", ""), 16);
+                const amt = Math.round(2.55 * percent);
+                const R = (num >> 16) - amt;
+                const G = (num >> 8 & 0x00FF) - amt;
+                const B = (num & 0x0000FF) - amt;
+                return "#" + (0x1000000 + (R > 0 ? R : 0) * 0x10000 +
+                    (G > 0 ? G : 0) * 0x100 +
+                    (B > 0 ? B : 0))
+                    .toString(16).slice(1);
             }
         }
 
@@ -476,11 +605,16 @@
 
         // 游戏主循环
         function gameLoop() {
+            gameState.animationTime += 0.016;
+            
             // 清空画布
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // 绘制3D背景
             draw3DBackground();
+
+            // 更新和绘制粒子效果
+            updateParticles();
 
             // 按Z坐标排序平台（远的先画）
             platforms.sort((a, b) => b.z - a.z);
@@ -493,6 +627,7 @@
             // 绘制瞄准线（蓄力时）
             if (gameState.isCharging && player.currentPlatform) {
                 drawAimLine();
+                createChargeParticles();
             }
 
             // 更新蓄力条
@@ -506,11 +641,78 @@
             }
         }
 
+        // 创建粒子效果
+        function createChargeParticles() {
+            if (Math.random() < 0.3) {
+                gameState.particles.push({
+                    x: player.x + (Math.random() - 0.5) * 30,
+                    y: player.y + (Math.random() - 0.5) * 30,
+                    z: player.z,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: -Math.random() * 2 - 1,
+                    vz: (Math.random() - 0.5) * 2,
+                    life: 1.0,
+                    color: `hsl(${gameState.power * 1.2}, 100%, 50%)`
+                });
+            }
+        }
+
+        // 更新粒子
+        function updateParticles() {
+            gameState.particles = gameState.particles.filter(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.z += particle.vz;
+                particle.vy += 0.1;
+                particle.life -= 0.02;
+
+                if (particle.life > 0) {
+                    const scale = gameState.perspective / (gameState.perspective + particle.z);
+                    ctx.globalAlpha = particle.life;
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, 3 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 粒子光晕
+                    const glowGradient = ctx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, 6 * scale);
+                    glowGradient.addColorStop(0, particle.color);
+                    glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    ctx.fillStyle = glowGradient;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, 6 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.globalAlpha = 1;
+                    return true;
+                }
+                return false;
+            });
+        }
+
         // 绘制3D背景
         function draw3DBackground() {
+            // 绘制渐变天空
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, gameState.horizon);
+            skyGradient.addColorStop(0, '#0a1929');
+            skyGradient.addColorStop(0.5, '#1e3a5f');
+            skyGradient.addColorStop(1, '#2e5266');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, gameState.horizon);
+
+            // 绘制星星
+            drawStars();
+
+            // 绘制地平线光晕
+            const horizonGlow = ctx.createRadialGradient(canvas.width / 2, gameState.horizon, 0, canvas.width / 2, gameState.horizon, 200);
+            horizonGlow.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            horizonGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = horizonGlow;
+            ctx.fillRect(0, gameState.horizon - 50, canvas.width, 100);
+
             // 绘制地平线
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(0, gameState.horizon);
             ctx.lineTo(canvas.width, gameState.horizon);
@@ -521,7 +723,7 @@
             ctx.lineWidth = 0.5;
             
             // 垂直线
-            for (let i = 0; i <= canvas.width; i += 50) {
+            for (let i = 0; i <= canvas.width; i += 40) {
                 ctx.beginPath();
                 ctx.moveTo(i, gameState.horizon);
                 ctx.lineTo(canvas.width / 2, canvas.height);
@@ -529,7 +731,7 @@
             }
 
             // 水平线
-            for (let z = 0; z <= 500; z += 50) {
+            for (let z = 0; z <= 500; z += 40) {
                 const scale = gameState.perspective / (gameState.perspective + z);
                 const y = gameState.horizon + (canvas.height - gameState.horizon) * (1 - scale);
                 
@@ -540,10 +742,38 @@
             }
 
             // 绘制远处的云朵
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
             draw3DCloud(100, 150, 30, 400);
             draw3DCloud(300, 120, 25, 350);
             draw3DCloud(250, 180, 35, 450);
+            draw3DCloud(50, 140, 20, 380);
+        }
+
+        // 绘制星星
+        function drawStars() {
+            const stars = [
+                {x: 50, y: 50, size: 2},
+                {x: 150, y: 80, size: 1.5},
+                {x: 250, y: 40, size: 2.5},
+                {x: 350, y: 90, size: 1},
+                {x: 100, y: 120, size: 1.8},
+                {x: 300, y: 60, size: 2.2},
+                {x: 180, y: 110, size: 1.3},
+                {x: 320, y: 130, size: 1.7}
+            ];
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 添加星光效果
+                const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size * 3);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(star.x - star.size * 3, star.y - star.size * 3, star.size * 6, star.size * 6);
+            });
         }
 
         // 绘制3D云朵
@@ -552,11 +782,24 @@
             const projY = gameState.horizon + (y - gameState.horizon) * scale;
             const projSize = size * scale;
             
-            ctx.globalAlpha = 0.6 * scale;
+            // 绘制云朵光晕
+            const cloudGlow = ctx.createRadialGradient(x, projY, 0, x, projY, projSize * 2);
+            cloudGlow.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            cloudGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = cloudGlow;
+            ctx.beginPath();
+            ctx.arc(x, projY, projSize * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制云朵主体
+            ctx.globalAlpha = 0.7 * scale;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.beginPath();
             ctx.arc(x, projY, projSize, 0, Math.PI * 2);
-            ctx.arc(x + projSize, projY, projSize * 0.8, 0, Math.PI * 2);
-            ctx.arc(x - projSize, projY, projSize * 0.8, 0, Math.PI * 2);
+            ctx.arc(x + projSize * 0.8, projY, projSize * 0.7, 0, Math.PI * 2);
+            ctx.arc(x - projSize * 0.8, projY, projSize * 0.7, 0, Math.PI * 2);
+            ctx.arc(x + projSize * 0.4, projY - projSize * 0.4, projSize * 0.6, 0, Math.PI * 2);
+            ctx.arc(x - projSize * 0.4, projY - projSize * 0.4, projSize * 0.6, 0, Math.PI * 2);
             ctx.fill();
             ctx.globalAlpha = 1;
         }
@@ -567,9 +810,10 @@
             const targetPlatform = platforms[currentIndex + 1];
             
             if (targetPlatform) {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
+                // 绘制瞄准线光晕
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 6;
+                ctx.setLineDash([8, 8]);
                 
                 ctx.beginPath();
                 ctx.moveTo(player.x, player.y);
@@ -582,17 +826,49 @@
                 const dirZ = dz / distance;
                 
                 const jumpForce = gameState.power * gameState.jumpPowerMultiplier;
-                const steps = 20;
+                const steps = 25;
                 
                 for (let i = 1; i <= steps; i++) {
                     const t = i / steps;
                     const px = player.x + dirX * jumpForce * 0.8 * t * 10;
                     const py = player.y - jumpForce * 1.2 * t * 10 + 0.5 * gameState.gravity * t * t * 100;
                     ctx.lineTo(px, py);
+                    
+                    // 绘制轨迹点
+                    if (i % 3 === 0) {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${0.8 - i * 0.02})`;
+                        ctx.beginPath();
+                        ctx.arc(px, py, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
                 }
                 
                 ctx.stroke();
+                
+                // 绘制主瞄准线
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
                 ctx.setLineDash([]);
+                
+                // 绘制目标平台高亮
+                const targetProj = targetPlatform.project();
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.8)';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(
+                    targetProj.x - targetProj.width / 2 - 5,
+                    targetProj.y - targetProj.height / 2 - 5,
+                    targetProj.width + 10,
+                    targetProj.depth + 10
+                );
+                
+                // 绘制目标平台光晕
+                const targetGlow = ctx.createRadialGradient(targetProj.x, targetProj.y, 0, targetProj.x, targetProj.y, Math.max(targetProj.width, targetProj.depth));
+                targetGlow.addColorStop(0, 'rgba(0, 255, 136, 0.4)');
+                targetGlow.addColorStop(1, 'rgba(0, 255, 136, 0)');
+                ctx.fillStyle = targetGlow;
+                ctx.fillRect(targetProj.x - targetProj.width, targetProj.y - targetProj.height, targetProj.width * 2, targetProj.depth * 2);
             }
         }
 
