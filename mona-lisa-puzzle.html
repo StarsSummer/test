@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蒙娜丽莎拼图游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .game-info {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        main {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .puzzle-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #puzzle-board {
+            display: grid;
+            gap: 2px;
+            background: #333;
+            padding: 2px;
+            border-radius: 10px;
+            position: relative;
+            width: 600px;
+            height: 400px;
+        }
+
+        .puzzle-piece {
+            width: 100%;
+            height: 100%;
+            background-size: 600px 400px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .puzzle-piece:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .puzzle-piece.correct {
+            cursor: default;
+            opacity: 1;
+        }
+
+        .puzzle-piece.selected {
+            box-shadow: 0 0 20px #ffeb3b, 0 0 40px #ffeb3b;
+            transform: scale(1.08);
+            z-index: 20;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-width: 280px;
+        }
+
+        .controls h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .stats {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .preview-container h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #preview-image {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: bounceIn 0.6s ease;
+        }
+
+        .success-message h2 {
+            color: #4caf50;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #puzzle-board {
+                width: 90vw;
+                max-width: 400px;
+                height: 267px;
+            }
+
+            .puzzle-piece {
+                background-size: 400px 267px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎨 蒙娜丽莎拼图游戏</h1>
+        <div class="game-info">将打乱的拼图块还原成完整的蒙娜丽莎画作</div>
+    </header>
+
+    <main>
+        <section class="puzzle-container">
+            <div id="puzzle-board"></div>
+        </section>
+
+        <aside class="controls">
+            <h2>游戏控制</h2>
+            
+            <div class="difficulty-buttons">
+                <button onclick="startGame(3)">简单 (3x3)</button>
+                <button onclick="startGame(4)">中等 (4x4)</button>
+                <button onclick="startGame(5)">困难 (5x5)</button>
+                <button onclick="shufflePuzzle()">重新打乱</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span>难度：</span>
+                    <span class="stat-value" id="difficulty">未开始</span>
+                </div>
+                <div class="stat-item">
+                    <span>移动次数：</span>
+                    <span class="stat-value" id="moves">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>用时：</span>
+                    <span class="stat-value timer" id="timer">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span>完成度：</span>
+                    <span class="stat-value" id="progress">0%</span>
+                </div>
+            </div>
+
+            <div class="preview-container">
+                <h3>原图预览</h3>
+                <img id="preview-image" src="83fe91f28c23c421c586ee2ff8f36043.jpg" alt="蒙娜丽莎原图">
+            </div>
+        </aside>
+    </main>
+
+    <div class="success-message" id="success-message">
+        <h2>🎉 恭喜完成！</h2>
+        <p id="success-text">您成功完成了拼图！</p>
+        <button onclick="closeSuccess()">继续游戏</button>
+    </div>
+
+    <script>
+        let gridSize = 3;
+        let pieces = [];
+        let selectedPiece = null;
+        let moves = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let gameStarted = false;
+
+        function startGame(size) {
+            gridSize = size;
+            moves = 0;
+            gameStarted = true;
+            selectedPiece = null;
+            
+            document.getElementById('difficulty').textContent = `${size}x${size}`;
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('progress').textContent = '0%';
+            
+            startTimer();
+            createPuzzle();
+            shufflePuzzle();
+        }
+
+        function createPuzzle() {
+            const board = document.getElementById('puzzle-board');
+            board.innerHTML = '';
+            board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            board.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+            
+            pieces = [];
+            
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.dataset.currentIndex = i;
+                piece.dataset.correctIndex = i;
+                
+                const row = Math.floor(i / gridSize);
+                const col = i % gridSize;
+                const bgPosX = -(col * (100 / gridSize));
+                const bgPosY = -(row * (100 / gridSize));
+                
+                piece.style.backgroundImage = 'url(83fe91f28c23c421c586ee2ff8f36043.jpg)';
+                piece.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+                piece.style.backgroundSize = `${gridSize * 100}% ${gridSize * 100}%`;
+                
+                piece.addEventListener('click', () => selectPiece(piece));
+                
+                pieces.push(piece);
+                board.appendChild(piece);
+            }
+        }
+
+        function selectPiece(piece) {
+            if (!gameStarted) return;
+            
+            if (selectedPiece === null) {
+                selectedPiece = piece;
+                piece.classList.add('selected');
+            } else if (selectedPiece === piece) {
+                piece.classList.remove('selected');
+                selectedPiece = null;
+            } else {
+                swapPieces(selectedPiece, piece);
+                selectedPiece.classList.remove('selected');
+                selectedPiece = null;
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                updateProgress();
+                checkWin();
+            }
+        }
+
+        function swapPieces(piece1, piece2) {
+            const tempBg = piece1.style.backgroundPosition;
+            const tempCorrect = piece1.dataset.correctIndex;
+            
+            piece1.style.backgroundPosition = piece2.style.backgroundPosition;
+            piece1.dataset.correctIndex = piece2.dataset.correctIndex;
+            
+            piece2.style.backgroundPosition = tempBg;
+            piece2.dataset.correctIndex = tempCorrect;
+        }
+
+        function shufflePuzzle() {
+            if (!gameStarted) {
+                alert('请先选择难度开始游戏！');
+                return;
+            }
+            
+            const positions = [];
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                const row = Math.floor(i / gridSize);
+                const col = i % gridSize;
+                const bgPosX = -(col * (100 / gridSize));
+                const bgPosY = -(row * (100 / gridSize));
+                positions.push({ bgPosX, bgPosY, correctIndex: i });
+            }
+            
+            // Fisher-Yates shuffle
+            for (let i = positions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [positions[i], positions[j]] = [positions[j], positions[i]];
+            }
+            
+            pieces.forEach((piece, index) => {
+                piece.style.backgroundPosition = `${positions[index].bgPosX}% ${positions[index].bgPosY}%`;
+                piece.dataset.correctIndex = positions[index].correctIndex;
+                piece.classList.remove('correct');
+            });
+            
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let correctCount = 0;
+            pieces.forEach((piece, index) => {
+                if (parseInt(piece.dataset.correctIndex) === index) {
+                    correctCount++;
+                    piece.classList.add('correct');
+                } else {
+                    piece.classList.remove('correct');
+                }
+            });
+            
+            const progress = Math.round((correctCount / pieces.length) * 100);
+            document.getElementById('progress').textContent = `${progress}%`;
+        }
+
+        function checkWin() {
+            const isComplete = pieces.every((piece, index) => 
+                parseInt(piece.dataset.correctIndex) === index
+            );
+            
+            if (isComplete) {
+                stopTimer();
+                showSuccess();
+            }
+        }
+
+        function showSuccess() {
+            const time = document.getElementById('timer').textContent;
+            document.getElementById('success-text').textContent = 
+                `您用了 ${moves} 步，耗时 ${time} 完成了拼图！`;
+            document.getElementById('success-message').classList.add('show');
+        }
+
+        function closeSuccess() {
+            document.getElementById('success-message').classList.remove('show');
+        }
+
+        function startTimer() {
+            stopTimer();
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // 初始化游戏
+        window.onload = function() {
+            // 可以选择自动开始一个简单游戏
+            // startGame(3);
+        };
+    </script>
+</body>
+</html>
