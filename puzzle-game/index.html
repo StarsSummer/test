@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼图小游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>拼图小游戏</h1>
+        <div class="game-info">
+            <div class="moves">移动次数: <span id="moves">0</span></div>
+            <div class="timer">时间: <span id="timer">00:00</span></div>
+        </div>
+        <div class="puzzle-container" id="puzzleContainer">
+            <!-- 拼图块将通过JavaScript动态生成 -->
+        </div>
+        <div class="controls">
+            <button id="shuffleBtn">重新洗牌</button>
+            <button id="resetBtn">重置游戏</button>
+            <div class="difficulty">
+                <label for="difficulty">难度:</label>
+                <select id="difficulty">
+                    <option value="3">简单 (3x3)</option>
+                    <option value="4" selected>普通 (4x4)</option>
+                    <option value="5">困难 (5x5)</option>
+                </select>
+            </div>
+        </div>
+        <div class="message" id="message"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
