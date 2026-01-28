@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蒙娜丽莎拼图游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="game-header">
+            <h1>蒙娜丽莎拼图游戏</h1>
+            <div class="game-info">
+                <div class="difficulty-selector">
+                    <label for="difficulty">难度选择：</label>
+                    <select id="difficulty">
+                        <option value="3">简单 (3x3)</option>
+                        <option value="4" selected>中等 (4x4)</option>
+                        <option value="5">困难 (5x5)</option>
+                        <option value="6">专家 (6x6)</option>
+                    </select>
+                </div>
+                <div class="stats">
+                    <span>移动次数：<span id="moves">0</span></span>
+                    <span>用时：<span id="timer">00:00</span></span>
+                </div>
+            </div>
+        </header>
+
+        <main class="game-area">
+            <div class="puzzle-container" id="puzzleContainer">
+                <div class="puzzle-grid" id="puzzleGrid">
+                    <!-- 拼图块将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="shuffleBtn" class="btn btn-primary">打乱拼图</button>
+                <button id="showOriginalBtn" class="btn btn-secondary">查看原图</button>
+                <button id="solveBtn" class="btn btn-success">自动完成</button>
+            </div>
+        </main>
+
+        <div class="modal" id="winModal">
+            <div class="modal-content">
+                <h2>🎉 恭喜完成！</h2>
+                <p>您用 <span id="finalMoves">0</span> 步，耗时 <span id="finalTime">00:00</span> 完成了拼图！</p>
+                <div class="modal-buttons">
+                    <button id="playAgainBtn" class="btn btn-primary">再玩一次</button>
+                    <button id="closeModalBtn" class="btn btn-secondary">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-modal" id="previewModal">
+            <div class="preview-content">
+                <h3>原图预览</h3>
+                <img src="83fe91f28c23c421c586ee2ff8f36043.jpg" alt="蒙娜丽莎原作" class="original-image">
+                <button id="closePreviewBtn" class="btn btn-secondary">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
